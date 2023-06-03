@@ -7,7 +7,18 @@ app.engine('ejs', engine);
 //app.set('view engine', 'pug');
 app.set('view engine', 'ejs');
 
-app.set('views', __dirname + '/views')
+app.set('views', __dirname + '/views');
+
+const data = {
+    data: [
+        [
+            "1",
+            "Urdesa Norte",
+            "Héctor",
+            "Data"
+        ]
+    ]
+};
 
 /* app.get('/', (req, res) => {
     const name = req.query.name;
@@ -20,17 +31,13 @@ app.get('/admin', (req, res) => {
 });
 
 app.get('/admin/data', (req, res) => {
-    const data = {
-        data: [
-            [
-                "1",
-                "Urdesa Norte",
-                "Héctor",
-                "Data"
-            ]
-        ]
-    };
     res.json(data);
+});
+
+app.post('/admin/data', (req, res) => {
+    const item = req.body.item;
+    data.push(item);
+    res.json({ code: 'ok', message: 'Success!'});
 });
 
 app.listen(3000, () => {
