@@ -9,6 +9,7 @@ const DB = require('./db.js');
 const Bookings = require('./models/bookings.js');
 
 const AdminBookings = require('./controllers/admin/bookings');
+const ClientBookings = require('./controllers/client/bookings');
 
 app.use(bodyParser.json({ type: 'application/json' }))
 
@@ -48,17 +49,7 @@ let bookings = [
 
 
 app.use('/admin', AdminBookings);
+app.use('/client', ClientBookings);
 
-app.get(['/','/client'], function (req, res) {
-    res.render('client/index', { name: 'Administrator'});
-});
-
-
-app.post('/client/bookings', function (req, res){
-    // const { body: { data } } = res.body;
-    console.log('Data:', req.body);
-    bookings.push(req.body)
-    res.json({ code: 'OK', message: 'Saved successfully!'})
-});
 
 app.listen(3000, () => console.log('Example app listening on port 3000!'))
