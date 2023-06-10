@@ -46,6 +46,19 @@ function deleteBooking(first_name, cb) {
     });
 }
 
+function deleteBookingById(first_name, cb) {
+    Bookings.findOneAndRemove({_id: id})
+    .then((booking) => {
+        console.log('Booking:', booking)
+       return cb(null, booking);
+    })
+    .catch((error) => {
+        console.log('Error:', error); 
+        return cb(error);
+    });
+}
+
 exports.getBooking = getBooking;
 exports.saveBooking = saveBooking;
 exports.deleteBooking = deleteBooking;
+exports.deleteBookingById = deleteBookingById;

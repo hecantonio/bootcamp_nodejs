@@ -8,6 +8,8 @@ const path = require('path');
 const DB = require('./db.js');
 const Bookings = require('./models/bookings.js');
 
+const AdminBookings = require('./controllers/admin/bookings');
+
 app.use(bodyParser.json({ type: 'application/json' }))
 
 app.engine('ejs', engine);
@@ -45,70 +47,7 @@ let bookings = [
 ]
 
 
-app.get('/admin', function (req, res) {
-    res.render('admin/index', { name: 'Administrator'});
-});
-
-app.get('/admin/bookings', (req, res) => {
-    res.json(bookings);
-});
-
-app.get('/admin/bookings/search', (req, res) => {
-
-    const { first_name } = req.query;
-    console.log('Firstname:', first_name)
-    Bookings.getBooking(first_name, (error, object) => {
-        if (error){
-            return res.status(500).json({code: 'UE', message: 'Unknown Error'})
-        }
-        return res.json({code: 'OK', message: 'Object', data: object})
-    })
-});
-
-app.delete('/admin/bookings', (req, res) => {
-
-    const { first_name } = req.query;
-    console.log('Firstname:', first_name)
-    Bookings.deleteBooking(first_name, (error, object) => {
-        if (error){
-            return res.status(500).json({code: 'UE', message: 'Unknown Error'})
-        }
-        return res.json({code: 'OK', message: 'Object', data: object})
-    })
-})
-
-app.post('/admin/bookings', function (req, res){
-    // const { body: { data } } = res.body;
-    console.log('Data:', req.body);
-    Bookings.saveBooking(req.body, (error, object) => {
-        if (error){
-            return res.status(500).json({code: 'UE', message: 'Unknown Error'})
-        }
-        return res.json({ code: 'OK', message: 'Saved successfully!', data: object.toJSON()})
-    })
-});
-
-app.put('/admin/bookings', function (req, res){
-    // const { body: { data } } = res.body;
-    console.log('Data:', req.body);
-    const body = req.body;
-    const { id } = req.body;
-    bookings = bookings.map(b => b.id == id ? body : b);
-    res.json({ code: 'OK', message: 'Saved successfully!'})
-});
-
-
-app.delete('/admin/bookings/:id', function (req, res){
-    // const { body: { data } } = res.body;
-    console.log('Deleting:', req.params);
-    const { id } = req.params;
-    
-    bookings = bookings.filter((b)=> b.id != id);
-
-    console.log('Data after deleting:',bookings);
-    res.json({ code: 'OK', message: 'Deleted successfully!'})
-});
-
+app.use('/admin', AdminBookings);
 
 app.get(['/','/client'], function (req, res) {
     res.render('client/index', { name: 'Administrator'});
