@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+ <meta charset="utf-8">
+ <title>CarWash - Cliente</title>
+ <meta name="author" content="Leonardo Larrea">
+ <meta name="description" content="Ejemplo de Formulario">
+ <meta name="viewport" content="width=device-width">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+ <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+ <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>
+ <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBgnxzkYklLilAz5PygCtvKq2w4HujuFLE"></script> -->
+ <style>
+    .container{
+    width: 50%;
+}
+#map{
+    height: 50vh;
+    margin-bottom: 10px;
+    display: none;
+}
+
+#locationList .card{
+    padding: 10px;
+}
+
+#toast-container{
+  top: 50%;
+  bottom: unset;
+}
+.toast{
+  background-color: rgba(0,0,0,.8);
+}
+.btn i{
+  font-size: 1rem;
+  margin-right: 2px;
+}
+
+@media only screen and (min-width: 768px){
+  .container{
+    width: 80%;
+      max-width: 800px;
+  }
+}
+ </style>
+</head>
+<body>
+
+<div class="card ">
+<div class="card-content">
+
+    
+    <div class="container">
+        <h2>CarWash - Agende su Cita Ya!!</h2>
+        <div class="row">
+            <div class="input-field col s6">
+              <input placeholder="Nombre" id="first_name" type="text">
+              <label for="first_name">Nombre de Cliente</label>
+            </div>
+            <div class="input-field col s6">
+              <input placeholder="Apellido" id="last_name" type="text">
+              <label for="last_name">Apellido de Cliente</label>
+            </div>
+        </div>        
+    </div>
+    
+    <div class="container">
+
+        <h4>Dirección de Vehiculo</h4>
+      
+        <p>Puedes dar click abajo para usar tu ubicación actual como dirección para el lavado de su vehiculo</p>
+      
+        <div id="map">
+        </div>
+      
+        <p id="current_position"></p>
+      
+        <button id="showMe" class="btn center-align">
+          <i class="material-icons">
+              my_location
+          </i>
+          Usar mi ubicación
+        </button>
+      
+      
+          <div id="locationList"></div>
+          <br>
+          <form id="client" class="col s12">
+          <div class="input-field">
+            <textarea class="materialize-textarea" id="address" type="text"></textarea>
+            <label class="active" for="address">Dirección (Calle principal, Calle Secundaria, Número de Casa)</label>
+          </div>
+      
+          <div class="input-field">
+            <input id="locality" type="text">
+            <label class="active" for="locality">Ciudadela o Barrio</label>
+          </div>
+      
+          <div class="input-field">
+            <input id="city" type="text">
+            <label class="active" for="city">Ciudad</label>
+          </div>
+      
+          <div class="input-field">
+            <input id="state" type="text">
+            <label class="active" for="state">Provincia</label>
+          </div>
+          <button id="send" class="btn waves-effect waves-light" type="button" name="action">Agendar
+            <i class="material-icons right">send</i>
+          </button>
+        </form>
+    </div>
+
+    
+
+</div>
+</div>
+
+<!-- Modal Structure -->
+<div id="modal1" class="modal">
+  <div class="modal-content">
+    <h4>Cita de lavado</h4>
+    <p>Esta seguro que desea agendar esta cita de lavado.....</p>
+  </div>
+  <div class="modal-footer">
+    <a href="#!" class="modal-close waves-effect waves-green btn-flat">Agree</a>
+  </div>
+</div>
+
+</body>
+</html>
+<script>
+    //This div will be used to show Google map
+const mapArea = document.getElementById('map');
+
+const $ = id => document.getElementById(id);
+
+const options = {
+    maximumAge:60000, 
+    timeout:5000, 
+    enableHighAccuracy:true
+}
+
+const actionBtn = document.getElementById('showMe');
+const locationsAvailable = document.getElementById('locationList');
+let Gmap, Gmarker;
+
+const __KEY = "CnphuumbF8AzmaYAwiDoaMd35Eo=";
+
+actionBtn.addEventListener('click', e => {
+  // hide the button 
+  e.stopPropagation();
+  actionBtn.style.display = "none";
+
+  // call Materialize toast to update user 
+  //M.toast({ html: 'Obteniendo tu ubicación actual', classes: 'rounded' });
+
+  // get the user's position
+  getLocation();
+
+});
+
+
+const sendBtn = document.getElementById('send');
+
+sendBtn.addEventListener('click', e => {
+    actionBtn.style.display = "none";
+    sendMe();
+});
+
+getLocation = () => {
+    
+  if (navigator.geolocation) {
+
+    navigator.geolocation.getCurrentPosition(function () {}, function () {}, {});
+
+    navigator.geolocation.getCurrentPosition(displayLocation, showError, options)
+    
+  }
+  else {
+    M.toast({ html: 'Lo siento, tu navegador no soporta esta caracteristica... Por favor actualizar tu navegador para disfrutar de la experiencia', classes: 'rounded' });
+  }
+}
+
+// displayLocation
+displayLocation = (position) => {
+  const lat = position.coords.latitude;
+  const lng = position.coords.longitude;
+
+  const latlng = { lat, lng }
+
+  console.log('Location', latlng)
+
+  showMap(latlng, lat, lng);
+  createMarker(latlng);
+  mapArea.style.display = "block";
+  getGeolocation(lat, lng);
+
+}
+
+// Recreates the map
+showMap = (latlng, lat, lng) => {
+  let mapOptions = {
+    center: latlng,
+    zoom: 17
+  };
+
+  Gmap = new google.maps.Map(mapArea, mapOptions);
+
+  Gmap.addListener('drag', function () {
+    Gmarker.setPosition(this.getCenter()); // set marker position to map center
+  });
+
+  Gmap.addListener('dragend', function () {
+    Gmarker.setPosition(this.getCenter()); // set marker position to map center
+  });
+
+  Gmap.addListener('idle', function () {
+
+    Gmarker.setPosition(this.getCenter()); // set marker position to map center
+
+    if (Gmarker.getPosition().lat() !== lat || Gmarker.getPosition().lng() !== lng) {
+      setTimeout(() => {
+        // console.log("I have to get new geocode here!")
+        updatePosition(this.getCenter().lat(), this.getCenter().lng()); // update position display
+      }, 1000);
+    }
+  });
+
+}
+
+// Creates marker on the screen
+createMarker = (latlng) => {
+  let markerOptions = {
+    position: latlng,
+    map: Gmap,
+    animation: google.maps.Animation.BOUNCE,
+    clickable: true
+    // draggable: true
+  };
+  Gmarker = new google.maps.Marker(markerOptions);
+
+}
+
+// updatePosition on 
+updatePosition = (lat, lng) => {
+
+  getGeolocation(lat, lng);
+}
+
+// Displays the different error messages
+showError = (error) => {
+    console.log('Error:', error);
+  mapArea.style.display = "block"
+  switch (error.code) {
+    case error.PERMISSION_DENIED:
+      mapArea.innerHTML = "Denegaste el pedido de ubicación."
+      break;
+    case error.POSITION_UNAVAILABLE:
+      mapArea.innerHTML = "La información de la ubicación no esta disponible."
+      break;
+    case error.TIMEOUT:
+      mapArea.innerHTML = "Tu requerimiento acaba de expirar. Por favor intentar nuevamente"
+      break;
+    case error.UNKNOWN_ERROR:
+      mapArea.innerHTML = "Un error desconocido ocurrió, por favor intente nuevamente luego de un tiempo."
+      break;
+  }
+}
+
+
+getGeolocation = (lat, lng) => {
+
+  const latlng = lat + "," + lng;
+  console.log('Geolocation:', latlng)
+  fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latlng}&key=${__KEY}`)
+
+    .then(res => res.json())
+    .catch(error => {
+     console.log('ERROR:',error);
+    })
+    .then(data => populateCard(data.results));
+
+}
+
+function removeAddressCards() {
+  if (locationsAvailable.hasChildNodes()) {
+    while (locationsAvailable.firstChild) {
+      locationsAvailable.removeChild(locationsAvailable.firstChild);
+    }
+  }
+}
+
+populateCard = (geoResults) => {
+  // check if a the container has a child node to force re-render of dom
+  removeAddressCards();
+
+  console.log('geoResults:',geoResults)
+
+  geoResults.map(geoResult => {
+
+    console.log('GeoResult:',geoResult)
+
+    // first create the input div container
+    const addressCard = document.createElement('div');
+
+    // then create the input and label elements
+    const input = document.createElement('input');
+    const label = document.createElement('label');
+
+    // then add materialize classes to the div and input
+    addressCard.classList.add("card");
+    input.classList.add("with-gap");
+
+    // add attributes to them
+    label.setAttribute("for", geoResult.place_id);
+    label.innerHTML = geoResult.formatted_address;
+
+    input.setAttribute("name", "address");
+    input.setAttribute("type", "radio");
+    input.setAttribute("value", geoResult.formatted_address);
+    input.setAttribute("id", geoResult.place_id);
+    // input.addEventListener('click', e => console.log(123));
+    input.addEventListener('click', () => inputClicked(geoResult));
+    // finalResult = input.value;
+    finalResult = geoResult.formatted_address;
+
+
+    addressCard.appendChild(input);
+    addressCard.appendChild(label);
+
+    // console.log(geoResult.formatted_address)
+
+    return (
+      locationsAvailable.appendChild(addressCard)
+    );
+  })
+}
+
+inputClicked = (result) => {
+
+  result.address_components.map(component => {
+    const types = component.types
+
+
+    if (types.includes('locality')) {
+      $('locality').value = component.long_name
+    }
+
+    if (types.includes('administrative_area_level_2')) {
+      $('city').value = component.long_name
+    }
+
+    if (types.includes('administrative_area_level_1')) {
+      $('state').value = component.long_name
+    }
+
+    if (types.includes('point_of_interest')) {
+      $('landmark').value = component.long_name
+    }
+  });
+
+  $('address').value = result.formatted_address;
+
+  // to avoid labels overlapping prefilled contents
+  M.updateTextFields();
+  removeAddressCards();
+}
+
+sendMe = () => {
+    /* Data which will be sent to server */
+    const postObj = { 
+        first_name: $('first_name').value, 
+        last_name: $('last_name').value,
+        address: $('address').value,
+        city: $('city').value
+    }
+    let post = JSON.stringify(postObj)
+    const url = "http://localhost:3000/client/appointments"
+    let xhr = new XMLHttpRequest()
+    xhr.open('POST', url, true)
+    xhr.setRequestHeader('Content-type', 'application/json; charset=UTF-8')
+    xhr.send(post);
+    xhr.onload = function (event) {
+        $('first_name').value = '';
+        $('last_name').value = '';
+        $('address').value = '';
+        $('city').value = '';
+        if(xhr.status === 201 || xhr.status === 200) {
+            M.toast({html: 'Creado exitosamente!'})
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    var elems = document.querySelectorAll('.modal');
+    var instances = M.Modal.init(elems, options);
+});
+
+
+</script>
