@@ -15,7 +15,7 @@ router.get('/', function (req, res) {
 
 router.post('/login', (req, res) => {
     const { email, password } = req.body;
-
+    req.session.user = { email, password };
     console.log('Email:', email, ' Password:', password);
     res.json({ code: 'OK', message: 'Login Success!'})
 })

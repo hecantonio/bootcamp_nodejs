@@ -1,49 +1,32 @@
 const express = require('express');
 const router = express.Router();
 
-const Bookings = require('../../../models/bookings.js');
+const Bookings = require('./../../../models/bookings');
+
 
 router.get('/', function (req, res) {
     res.render('admin/index', { name: 'Administrator'});
 });
 
-router.get('/admin/bookings', (req, res) => {
-    res.json(bookings);
-});
-
-router.get('/bookings/search', (req, res) => {
-
-    const { first_name } = req.query;
-    console.log('Firstname:', first_name)
-    Bookings.getBooking(first_name, (error, object) => {
-        if (error){
-            return res.status(500).json({code: 'UE', message: 'Unknown Error'})
+router.get('/bookings', (req, res) => {
+    return Bookings.getBooking((error, elems)=> {
+        if (error) {
+            return res.status(500).json({ code: 'UE', message: 'Unknown error'})
         }
-        return res.json({code: 'OK', message: 'Object', data: object})
-    })
+        res.json(elems);
+    });
 });
-
-router.delete('/bookings', (req, res) => {
-
-    const { first_name } = req.query;
-    console.log('Firstname:', first_name)
-    Bookings.deleteBooking(first_name, (error, object) => {
-        if (error){
-            return res.status(500).json({code: 'UE', message: 'Unknown Error'})
-        }
-        return res.json({code: 'OK', message: 'Object', data: object})
-    })
-})
 
 router.post('/bookings', function (req, res){
-    // const { body: { data } } = res.body;
-    console.log('Data:', req.body);
-    Bookings.saveBooking(req.body, (error, object) => {
-        if (error){
-            return res.status(500).json({code: 'UE', message: 'Unknown Error'})
+    const body = req.body;
+    console.log('Data:', body);
+    
+    return Bookings.createBooking(body, (error, b) => {
+        if(error){
+            return  res.status(500).json({ code: 'UE', message: 'Unkwown error'})
         }
-        return res.json({ code: 'OK', message: 'Saved successfully!', data: object.toJSON()})
-    })
+        res.json({ code: 'OK', message: 'Saved successfully!', data: b.toJSON()})
+    });
 });
 
 router.put('/bookings', function (req, res){
@@ -61,12 +44,12 @@ router.delete('/bookings/:id', function (req, res){
     console.log('Deleting:', req.params);
     const { id } = req.params;
     
-    Bookings.deleteBookingById(id, (err, elem) => {
-        if(err){
-            return res.status(500).json({code: 'UE', message: 'Unknown Error'})
-        }else{
-            console.log('Data after deleting:',elem);
-            res.json({ code: 'OK', message: 'Deleted successfully!', data: elem})
+    Bookings.deleteBooking(id, (error, b) => {
+        if (error) {
+            return  res.status(500).json({ code: 'UE', message: 'Unkwown error'})
         }
-    })    
+        res.json({ code: 'OK', message: 'Deleted successfully!', data: b.toJSON()})
+    });
 });
+
+module.exports = router;

@@ -6,9 +6,10 @@ const session = require('express-session');
 
 const path = require('path');
 
-//const db = require('./db');
+const db = require('./db');
 
 const AdminBookings = require('./controllers/admin/bookings')
+const AdminUsers = require('./controllers/admin/users')
 
 app.use(bodyParser.json({ type: 'application/json' }))
 
@@ -23,7 +24,8 @@ app.engine('ejs', engine);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 
-app.use('/', AdminBookings);
+app.use('/users', AdminUsers);
+//app.use('/', AdminBookings);
 
 app.use(express.static(path.join(__dirname, "build")));
 
