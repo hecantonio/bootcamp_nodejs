@@ -469,11 +469,11 @@ $(document).ready(function(){
 
     function delBookings() {
         const bookings = $("#table").bootstrapTable('getSelections');
-        console.log('Deleting:', bookings)
+        console.log('Deleting:'+ JSON.stringify(bookings))
         if(bookings.length) {
             const booking = bookings[0];
-            console.log('Deleting:', booking)
-            const url = 'http://localhost:3000/admin/bookings/'+booking.id
+            console.log('Deleting:'+ JSON.stringify(booking))
+            const url = 'http://localhost:3000/admin/bookings/'+booking._id
             deleteData(url);
         }
         $('#deleteBookingModal').modal('hide');

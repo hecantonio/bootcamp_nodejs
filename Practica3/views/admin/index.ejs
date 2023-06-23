@@ -473,7 +473,7 @@ $(document).ready(function(){
         if(bookings.length) {
             const booking = bookings[0];
             console.log('Deleting:', booking)
-            const url = 'http://localhost:3000/admin/bookings/'+booking.id
+            const url = 'http://localhost:3000/admin/bookings/'+booking._id
             deleteData(url);
         }
         $('#deleteBookingModal').modal('hide');

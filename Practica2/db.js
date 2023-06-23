@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
-mongoose.connect('mongodb+srv://leonardolarrea1:RfII1K1caoBJYJVr@cluster0.j3g4xyz.mongodb.net/BootCampDB?retryWrites=true&w=majority')
+
+//const URL = 'mongodb+srv://leonardolarrea1:RfII1K1caoBJYJVr@cluster0.j3g4xyz.mongodb.net/BootCampDB?retryWrites=true&w=majority';
+const URL = 'mongodb+srv://bootcamp:bootcamp@cluster0.beimaw4.mongodb.net/?retryWrites=true&w=majority';
+mongoose.connect(URL)
 .then(() => {
     console.log('Database connected!');
 })
