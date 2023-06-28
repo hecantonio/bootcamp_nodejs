@@ -49,7 +49,7 @@ const App = () => {
     user.image = "https://randomuser.me/api/portraits/thumb/lego/1.jpg";
     
     axios
-    .post("http://localhost:3000/users", { user })
+    .post("http://localhost:3000/v1/users", { user })
     .then((response) => {
       console.log('Data:', response)
       setUsers([user, ...users]);

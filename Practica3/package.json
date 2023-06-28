@@ -32,6 +32,7 @@
     "ejs-locals": "^1.0.2",
     "express-session": "^1.17.3",
     "install": "^0.13.0",
+    "jsonwebtoken": "^9.0.0",
     "mongoose": "^7.2.3",
     "nodemon": "^2.0.22",
     "npm": "^9.6.7",

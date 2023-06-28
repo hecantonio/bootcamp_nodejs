@@ -1,4 +1,4 @@
-const Users = require('../schemas/Users');
+const Users = require('../schemas/users');
 
 function getUser(cb) {
     Users.find({})
@@ -12,7 +12,7 @@ function getUser(cb) {
 }
 
 function getUserByEmail(emailValue, cb) {
-    Users.findOne({ email: emailValue })
+    Users.findOne({ email: emailValue})
     .then((elem) => {
         return cb(null, elem);
     })

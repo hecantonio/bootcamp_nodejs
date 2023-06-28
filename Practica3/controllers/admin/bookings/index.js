@@ -2,23 +2,46 @@ const express = require('express');
 const router = express.Router();
 
 const Bookings = require('./../../../models/bookings');
-//const Users = require('../users');
+const Users = require('./../../../models/users');
 
 
-router.get('/', function (req, res) {
-    if(req.session.user){
+router.get('/', (req, res) => {
+    console.log('User:', req.session.user)
+    if (req.session.user) {
         return res.render('admin/index', { name: 'Administrator'});
     }
-    //res.status(403).json({ code: 'UA', message: 'Forbidden'})
     return res.render('admin/login');
 });
 
 router.post('/login', (req, res) => {
-    const { email, password } = req.body;
-    req.session.user = { email, password };
-    console.log('Email:', email, ' Password:', password);
-    res.json({ code: 'OK', message: 'Login Success!'})
-})
+
+    const { 
+        email, 
+        password
+    } = req.body;
+
+    console.log('Email:', email, 'Password:', password);
+
+    Users.getUserByEmail(email, (error, user) => {
+        if(error) {
+            return  res.status(500).json({ code: 'UE' , message: 'Unknown Error!'})
+        }
+        console.log('User:', user)
+        if (user.password == password) {
+
+            req.session.user = user.toJSON();
+
+            return req.session.save(function (err) {
+                if (err) return  res.status(500).json({ code: 'UE' , message: 'Unknown Error!'})
+                console.log('Success:', user)
+                // return res.json({ code: 'OK', message: 'Login successful!'})
+                return res.redirect('/');
+            });
+        }
+        
+        return res.status(421).json({ code: 'PF' , message: 'Email or password is incorrect!'})
+    });
+});
 
 router.get('/bookings', (req, res) => {
     return Bookings.getBooking((error, elems)=> {
@@ -63,9 +86,6 @@ router.delete('/bookings/:id', function (req, res){
         res.json({ code: 'OK', message: 'Deleted successfully!', data: b.toJSON()})
     });
 });
-
-
-//router.use('/users', Users);
 
 
 module.exports = router;
